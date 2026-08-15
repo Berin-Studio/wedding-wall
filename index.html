@@ -151,7 +151,7 @@
   .sc-idle .names{ font-size:min(11vw,90px); font-family:'Cormorant Garamond',serif; font-weight:600; }
   .sc-idle .amp{ color:var(--gold); font-style:italic; }
   .sc-idle .qrbox{ margin-top:26px; display:inline-flex; align-items:center; gap:14px; background:rgba(255,255,255,.06); padding:14px 22px; border-radius:6px; border:1px solid rgba(255,255,255,.12); }
-  .sc-idle .qricon{ width:54px; height:54px; background:#fff; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:26px; }
+  .sc-idle .qricon{ width:110px; height:110px; background:#fff; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:26px; padding:6px; }
   .sc-idle .qrtext{ text-align:left; font-size:13px; color:#d9cdb2; }
 
   .sc-photos{ width:min(78vw,900px); height:min(64vh,620px); border-radius:6px; overflow:hidden; position:relative; box-shadow:0 30px 80px rgba(0,0,0,.5); }
@@ -577,7 +577,7 @@
           <div class="sc-idle">
             <div class="names">Саша <span class="amp">&amp;</span> Маша</div>
             <div class="qrbox">
-              <div class="qricon">▦</div>
+              <div class="qricon"><img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data=https%3A%2F%2Fcru-event.ru" alt="QR" style="width:100%;height:100%;object-fit:contain;"/></div>
               <div class="qrtext">Отсканируйте QR на столе,<br>чтобы отправить фото, тост<br>или слово о молодых</div>
             </div>
           </div>`;
