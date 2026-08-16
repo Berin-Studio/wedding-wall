@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Свадебная стена</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Work+Sans:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Work+Sans:wght@400;500;600&family=Caveat:wght@500;600;700&display=swap');
 
   :root{
     --paper: #f6f1e6;
@@ -154,10 +154,36 @@
   .sc-idle .qricon{ width:110px; height:110px; background:#fff; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:26px; padding:6px; }
   .sc-idle .qrtext{ text-align:left; font-size:13px; color:#d9cdb2; }
 
-  .sc-photos{ width:min(78vw,900px); height:min(64vh,620px); border-radius:6px; overflow:hidden; position:relative; box-shadow:0 30px 80px rgba(0,0,0,.5); }
-  .sc-photos img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 1.1s ease; }
-  .sc-photos img.on{ opacity:1; }
-  .sc-photos .cap{ position:absolute; bottom:0; left:0; right:0; padding:14px 20px; background:linear-gradient(transparent, rgba(0,0,0,.55)); font-size:13px; letter-spacing:.05em; color:#eee; }
+  .sc-photos{ width:min(60vw,620px); position:relative; }
+  .sc-polaroid{
+    background:#fbfaf6; padding:22px 22px 0; border-radius:2px;
+    box-shadow:0 30px 80px rgba(0,0,0,.5), 0 2px 0 rgba(0,0,0,.04) inset;
+    opacity:0; transform:rotate(-1.4deg) scale(.97); transition:opacity .8s ease, transform .8s ease;
+  }
+  .sc-polaroid.on{ opacity:1; transform:rotate(-1.4deg) scale(1); }
+  .sc-polaroid .ph-frame{ width:100%; aspect-ratio:1/1; overflow:hidden; background:#ece6d8; }
+  .sc-polaroid .ph-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .sc-polaroid .ph-cap{
+    padding:16px 6px 26px; text-align:center; font-family:'Caveat',cursive;
+    font-size:30px; color:#2c2620; line-height:1;
+  }
+  .sc-polaroid .ph-cap::before{ content:"— "; }
+
+  .sc-album{ width:min(88vw,1100px); height:min(78vh,760px); overflow-y:auto; padding:10px; }
+  .sc-album-grid{ display:flex; flex-wrap:wrap; gap:26px 22px; justify-content:center; align-items:flex-start; }
+  .sc-album .polaroid-card{
+    background:#fbfaf6; padding:12px 12px 0; width:200px; border-radius:2px;
+    box-shadow:0 10px 26px rgba(0,0,0,.35); flex:0 0 auto;
+  }
+  .sc-album .polaroid-card:nth-child(3n){ transform:rotate(1.6deg); }
+  .sc-album .polaroid-card:nth-child(3n+1){ transform:rotate(-1.8deg); }
+  .sc-album .polaroid-card:nth-child(3n+2){ transform:rotate(0.6deg); }
+  .sc-album .ph-frame{ width:100%; aspect-ratio:1/1; overflow:hidden; background:#ece6d8; }
+  .sc-album .ph-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .sc-album .ph-cap{ padding:10px 4px 16px; text-align:center; font-family:'Caveat',cursive; font-size:19px; color:#2c2620; line-height:1; }
+  .sc-album .ph-cap::before{ content:"— "; }
+  .sc-album-title{ text-align:center; margin-bottom:20px; }
+  .sc-album-title .t1{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:22px; color:var(--gold); }
 
   .sc-toast{ width:min(70vw,760px); text-align:center; }
   .sc-toast .quote{ font-size:min(6vw,44px); font-family:'Cormorant Garamond',serif; font-style:italic; line-height:1.3; }
@@ -172,12 +198,8 @@
 <body>
 <div id="app">
 
-  <div class="devbar">
-    <span>Прототип · переключить вид</span>
-    <button data-view="guest" class="active">Гость (QR)</button>
-    <button data-view="host">Ведущий</button>
-    <button data-view="screen">Большой экран</button>
-    <span id="sync-status" style="margin-left:auto; opacity:.5;">●</span>
+  <div class="devbar" style="justify-content:flex-end;">
+    <span id="sync-status" style="opacity:.35;">●</span>
   </div>
 
   <!-- ============ GUEST ============ -->
@@ -201,6 +223,9 @@
             <div class="ic">❤️</div>
             <div><div class="tt">Одно слово о молодых</div><div class="sub">Соберётся в облако в конце вечера</div></div>
           </button>
+        </div>
+        <div id="g-cover-wrap" style="display:none; margin-top:26px; text-align:center;">
+          <img id="g-cover-img" style="max-width:100%; border-radius:2px; box-shadow:3px 3px 0 rgba(44,38,32,.08);" />
         </div>
       </div>
 
@@ -262,12 +287,23 @@
         <div id="host-pending"></div>
       </div>
       <div class="h-col">
+        <h3>Фото пары на главной странице</h3>
+        <p class="hint" style="margin:-6px 0 14px; font-size:12.5px; color:#847a6a;">Появится у гостей под кнопками, до начала мероприятия можно оставить пустым</p>
+        <div class="photo-drop" id="cover-drop" style="margin-bottom:12px;">
+          <div id="cover-drop-empty">Нажмите, чтобы выбрать фото</div>
+          <img id="cover-preview" style="display:none" />
+        </div>
+        <input type="file" id="cover-input" accept="image/*" style="display:none" />
+        <button class="primary" id="cover-submit" disabled>Загрузить фото</button>
+        <button id="cover-clear" style="width:100%; margin-top:8px; background:none; border:1px solid var(--line); border-radius:var(--radius); padding:10px; font-family:inherit; font-size:13px; color:var(--wine); cursor:pointer;">Убрать текущее фото</button>
+        <div id="cover-status"></div>
         <h3>Что показать на экране</h3>
         <div class="stage-btns" id="stage-btns">
           <button data-stage="idle">Заставка</button>
           <button data-stage="photos">Фотоальбом</button>
           <button data-stage="toasts">Лента тостов</button>
           <button data-stage="heart">Облако слов</button>
+          <button data-stage="album">Финальный альбом</button>
         </div>
         <h3 style="margin-top:22px">Одобренные тосты</h3>
         <div id="host-approved"></div>
@@ -356,8 +392,8 @@
   async function fetchDisplay(){
     const { data, error } = await sb.from("display_state").select("*").eq("id", 1).single();
     storageOk = !error;
-    if(error){ console.error("fetchDisplay: " + (error.message||JSON.stringify(error))); return { mode:"idle", featured:null }; }
-    return { mode: data.mode || "idle", featured: data.featured };
+    if(error){ console.error("fetchDisplay: " + (error.message||JSON.stringify(error))); return { mode:"idle", featured:null, cover_photo:null }; }
+    return { mode: data.mode || "idle", featured: data.featured, cover_photo: data.cover_photo || null };
   }
   async function setDisplay(mode, featured){
     const { error } = await sb.from("display_state")
@@ -366,22 +402,55 @@
     storageOk = !error;
     if(error) console.error("setDisplay: " + (error.message||JSON.stringify(error)));
   }
+  async function setCoverPhoto(dataUrl){
+    const fileName = `cover-${Date.now()}.jpg`;
+    const blob = await (await fetch(dataUrl)).blob();
+    const { error: upErr } = await sb.storage.from("photos").upload(fileName, blob, { contentType:"image/jpeg" });
+    if(upErr) throw upErr;
+    const { data: pub } = sb.storage.from("photos").getPublicUrl(fileName);
+    const { error: updErr } = await sb.from("display_state")
+      .update({ cover_photo: pub.publicUrl, updated_at: new Date().toISOString() })
+      .eq("id", 1);
+    if(updErr) throw updErr;
+    return pub.publicUrl;
+  }
+  async function clearCoverPhoto(){
+    const { error } = await sb.from("display_state")
+      .update({ cover_photo: null, updated_at: new Date().toISOString() })
+      .eq("id", 1);
+    if(error) throw error;
+  }
 
-  // ---------------- view switching ----------------
+  // ---------------- view switching (hidden routes via URL hash) ----------------
+  // cru-event.ru            -> гость (по умолчанию, видят все)
+  // cru-event.ru/#host      -> панель ведущего (скрытая ссылка)
+  // cru-event.ru/#screen    -> большой экран (скрытая ссылка)
   const views = ["guest","host","screen"];
-  document.querySelectorAll(".devbar button[data-view]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      views.forEach(v=>{
-        document.getElementById(v).classList.toggle("active", v===btn.dataset.view);
-      });
-      document.querySelectorAll(".devbar button[data-view]").forEach(b=>b.classList.toggle("active", b===btn));
-      if(btn.dataset.view === "host"){ lastMode = null; renderHost(); }
-      if(btn.dataset.view === "screen"){ lastMode = null; renderScreen(); }
+  function applyViewFromHash(){
+    const raw = (location.hash || "").replace("#","").trim();
+    const view = views.includes(raw) ? raw : "guest";
+    views.forEach(v=>{
+      document.getElementById(v).classList.toggle("active", v===view);
     });
-  });
+    if(view === "host"){ lastMode = null; renderHost(); }
+    if(view === "screen"){ lastMode = null; renderScreen(); }
+  }
+  window.addEventListener("hashchange", applyViewFromHash);
 
   // ---------------- GUEST: menu nav ----------------
   const gMenu = document.getElementById("g-menu-view");
+  async function loadCoverPhoto(){
+    const display = await fetchDisplay();
+    const wrap = document.getElementById("g-cover-wrap");
+    const img = document.getElementById("g-cover-img");
+    if(display.cover_photo){
+      img.src = display.cover_photo;
+      wrap.style.display = "";
+    } else {
+      wrap.style.display = "none";
+    }
+  }
+  loadCoverPhoto();
   const gPhoto = document.getElementById("g-photo-view");
   const gToast = document.getElementById("g-toast-view");
   const gWord = document.getElementById("g-word-view");
@@ -431,9 +500,14 @@
   });
   photoSubmit.addEventListener("click", async ()=>{
     if(!currentPhotoDataUrl) return;
+    const photoName = document.getElementById("photo-name").value.trim();
+    if(containsProfanity(photoName)){
+      document.getElementById("photo-status").innerHTML = '<div class="toast-msg warn">Подпись не прошла проверку, измените имя</div>';
+      return;
+    }
     photoSubmit.disabled = true; photoSubmit.textContent = "Отправка…";
     try{
-      await addPhoto(currentPhotoDataUrl, document.getElementById("photo-name").value.trim());
+      await addPhoto(currentPhotoDataUrl, photoName);
       document.getElementById("photo-status").innerHTML = '<div class="toast-msg ok">Спасибо! Фото добавлено в альбом ❤️</div>';
     }catch(e){
       console.error(e);
@@ -558,6 +632,63 @@
     renderHost();
   });
 
+  // ---- cover photo (фото пары на главной странице гостя) ----
+  let currentCoverDataUrl = null;
+  const coverDrop = document.getElementById("cover-drop");
+  const coverInput = document.getElementById("cover-input");
+  const coverPreview = document.getElementById("cover-preview");
+  const coverEmpty = document.getElementById("cover-drop-empty");
+  const coverSubmit = document.getElementById("cover-submit");
+  const coverStatus = document.getElementById("cover-status");
+  coverDrop.addEventListener("click", ()=>coverInput.click());
+  coverInput.addEventListener("change", (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      img.onload = ()=>{
+        const canvas = document.createElement("canvas");
+        const maxDim = 1400;
+        let w = img.width, h = img.height;
+        if(w>h && w>maxDim){ h = h*maxDim/w; w = maxDim; }
+        else if(h>=w && h>maxDim){ w = w*maxDim/h; h = maxDim; }
+        canvas.width=w; canvas.height=h;
+        canvas.getContext("2d").drawImage(img,0,0,w,h);
+        currentCoverDataUrl = canvas.toDataURL("image/jpeg", 0.82);
+        coverPreview.src = currentCoverDataUrl;
+        coverPreview.style.display = "block";
+        coverEmpty.style.display = "none";
+        coverDrop.classList.add("has-img");
+        coverSubmit.disabled = false;
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  coverSubmit.addEventListener("click", async ()=>{
+    if(!currentCoverDataUrl) return;
+    coverSubmit.disabled = true; coverSubmit.textContent = "Загрузка…";
+    try{
+      await setCoverPhoto(currentCoverDataUrl);
+      coverStatus.innerHTML = '<div class="toast-msg ok">Фото сохранено, гости уже видят его на главной</div>';
+    }catch(e){
+      coverStatus.innerHTML = '<div class="toast-msg warn">Ошибка: '+escapeHtml(e.message||String(e))+'</div>';
+    }
+    coverSubmit.disabled = false; coverSubmit.textContent = "Загрузить фото";
+  });
+  document.getElementById("cover-clear").addEventListener("click", async ()=>{
+    try{
+      await clearCoverPhoto();
+      currentCoverDataUrl = null;
+      coverPreview.style.display = "none"; coverEmpty.style.display = "block";
+      coverDrop.classList.remove("has-img"); coverInput.value=""; coverSubmit.disabled = true;
+      coverStatus.innerHTML = '<div class="toast-msg ok">Фото убрано</div>';
+    }catch(e){
+      coverStatus.innerHTML = '<div class="toast-msg warn">Ошибка: '+escapeHtml(e.message||String(e))+'</div>';
+    }
+  });
+
   // ---------------- SCREEN ----------------
   const scStage = document.getElementById("sc-stage");
   let lastMode = null, photoTimer=null, toastTimer=null;
@@ -591,7 +722,9 @@
         const wrap = document.getElementById("sc-photos-wrap");
         function draw(){
           const p = photos[i % photos.length];
-          wrap.innerHTML = `<img class="on" src="${p.img}"/><div class="cap">От ${escapeHtml(p.name)}</div>`;
+          wrap.innerHTML = `<div class="sc-polaroid" id="sc-polaroid-cur"><div class="ph-frame"><img src="${p.img}"/></div><div class="ph-cap">${escapeHtml(p.name)}</div></div>`;
+          const el = document.getElementById("sc-polaroid-cur");
+          requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add("on")));
           i++;
         }
         draw();
@@ -599,6 +732,29 @@
           const fresh = await fetchPhotos();
           if(fresh.length){ photos = fresh; draw(); }
         }, 4200);
+      }
+
+      if(mode === "album"){
+        let photos = await fetchPhotos();
+        if(!photos.length){ scStage.innerHTML = '<div class="sc-empty">Пока нет фотографий для альбома…</div>'; return; }
+        function renderAlbum(list){
+          scStage.innerHTML = `
+            <div class="sc-album">
+              <div class="sc-album-title"><span class="t1">Саша &amp; Маша · на память</span></div>
+              <div class="sc-album-grid">
+                ${list.map(p=>`
+                  <div class="polaroid-card">
+                    <div class="ph-frame"><img src="${p.img}"/></div>
+                    <div class="ph-cap">${escapeHtml(p.name)}</div>
+                  </div>`).join("")}
+              </div>
+            </div>`;
+        }
+        renderAlbum(photos);
+        photoTimer = setInterval(async ()=>{
+          const fresh = await fetchPhotos();
+          if(fresh.length !== photos.length){ photos = fresh; renderAlbum(photos); }
+        }, 6000);
       }
 
       if(mode === "toasts"){
@@ -666,6 +822,7 @@
   setInterval(()=>{
     if(document.getElementById("host").classList.contains("active")) renderHost();
     if(document.getElementById("screen").classList.contains("active")) renderScreen();
+    if(document.getElementById("guest").classList.contains("active") && gMenu.style.display !== "none") loadCoverPhoto();
     const dot = document.getElementById("sync-status");
     if(dot){
       dot.style.color = storageOk ? "#7c8b6f" : "#c0505a";
@@ -674,8 +831,7 @@
   }, 3000);
 
   renderWordPreview();
-  renderHost();
-  renderScreen();
+  applyViewFromHash();
 })();
 </script>
 </body>
