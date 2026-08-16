@@ -312,6 +312,8 @@
         <h3 style="margin-top:22px">Одобренные тосты</h3>
         <div id="host-approved"></div>
         <h3 style="margin-top:22px">Фото гостей (<span id="host-photo-count">0</span>)</h3>
+        <button id="download-all-photos" style="width:100%; margin-bottom:10px; background:none; border:1px solid var(--gold); border-radius:var(--radius); padding:11px; font-family:'Cormorant Garamond',serif; font-size:15px; color:var(--gold); cursor:pointer;">Скачать все фото (ZIP) ↓</button>
+        <div id="download-status" style="font-size:12.5px; color:#a99; margin-bottom:12px;"></div>
         <div class="mini-photo-grid" id="host-photos"></div>
         <h3 style="margin-top:22px">Слова</h3>
         <div class="word-mini" id="host-words"></div>
@@ -328,6 +330,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script>
 (function(){
   // ====== SUPABASE CONFIG ======
@@ -693,6 +696,44 @@
     }catch(e){
       coverStatus.innerHTML = '<div class="toast-msg warn">Ошибка: '+escapeHtml(e.message||String(e))+'</div>';
     }
+  });
+
+  // ---- скачать все фото архивом (ZIP) ----
+  document.getElementById("download-all-photos").addEventListener("click", async ()=>{
+    const btn = document.getElementById("download-all-photos");
+    const statusEl = document.getElementById("download-status");
+    const photos = await fetchPhotos();
+    if(!photos.length){ statusEl.textContent = "Пока нет ни одной фотографии"; return; }
+    btn.disabled = true;
+    const usedNames = {};
+    try{
+      const zip = new JSZip();
+      for(let i=0; i<photos.length; i++){
+        statusEl.textContent = `Загрузка ${i+1} из ${photos.length}…`;
+        const p = photos[i];
+        const resp = await fetch(p.img);
+        const blob = await resp.blob();
+        let base = (p.name||"Гость").replace(/[^a-zA-Zа-яА-ЯёЁ0-9]+/g,"_").slice(0,30) || "Гость";
+        usedNames[base] = (usedNames[base]||0) + 1;
+        const fileName = `${String(i+1).padStart(3,"0")}_${base}${usedNames[base]>1 ? "_"+usedNames[base] : ""}.jpg`;
+        zip.file(fileName, blob);
+      }
+      statusEl.textContent = "Собираем архив…";
+      const content = await zip.generateAsync({ type:"blob" });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "свадебная-стена-фото.zip";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      statusEl.textContent = `Готово! Скачано фото: ${photos.length}`;
+    }catch(e){
+      console.error(e);
+      statusEl.textContent = "Ошибка при сборке архива: " + (e.message||String(e));
+    }
+    btn.disabled = false;
   });
 
   // ---------------- SCREEN ----------------
