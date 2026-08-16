@@ -279,7 +279,10 @@
   <div id="host" class="screen">
     <div class="h-top">
       <h1>Панель ведущего</h1>
-      <div class="h-sub" id="host-count">0 новых</div>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div class="h-sub" id="host-count">0 новых</div>
+        <a href="#screen" target="_blank" rel="noopener" style="font-family:'Cormorant Garamond',serif; font-size:15px; color:var(--gold); border:1px solid var(--gold); border-radius:2px; padding:7px 14px; text-decoration:none; white-space:nowrap;">Открыть большой экран ↗</a>
+      </div>
     </div>
     <div class="h-body">
       <div class="h-col">
@@ -298,6 +301,7 @@
         <button id="cover-clear" style="width:100%; margin-top:8px; background:none; border:1px solid var(--line); border-radius:var(--radius); padding:10px; font-family:inherit; font-size:13px; color:var(--wine); cursor:pointer;">Убрать текущее фото</button>
         <div id="cover-status"></div>
         <h3>Что показать на экране</h3>
+        <div style="font-size:13px; color:#a99; margin-bottom:10px;">Сейчас у гостей: <span id="host-current-mode" style="color:var(--gold);">—</span></div>
         <div class="stage-btns" id="stage-btns">
           <button data-stage="idle">Заставка</button>
           <button data-stage="photos">Фотоальбом</button>
@@ -609,6 +613,8 @@
     document.getElementById("host-words").innerHTML = wordEntries.length ? wordEntries.map(([w,c])=>`<span>${escapeHtml(w)} · ${c}</span>`).join("") : '<div class="empty">Пока нет слов</div>';
 
     document.querySelectorAll("#stage-btns button").forEach(b=>b.classList.toggle("on", b.dataset.stage===display.mode));
+    const modeLabels = { idle:"Заставка", photos:"Фотоальбом", toasts:"Лента тостов", heart:"Облако слов", album:"Финальный альбом" };
+    document.getElementById("host-current-mode").textContent = modeLabels[display.mode] || "Заставка";
 
     pendEl.querySelectorAll("button[data-act]").forEach(btn=>{
       btn.addEventListener("click", async ()=>{
