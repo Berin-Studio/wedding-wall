@@ -112,7 +112,7 @@
   .primary:hover{ transform:translateY(-1px); }
   .primary:active{ transform:translateY(0) scale(.99); }
   .primary:disabled{
-    background:#c9bfae; box-shadow:none; color:#8c8171; cursor:default; transform:none;
+    background:linear-gradient(160deg, #8c7134 0%, #6b5522 100%); box-shadow:none; color:#4a3c15; cursor:default; transform:none; opacity:.65;
   }
   .primary:disabled::before{ display:none; }
 
@@ -400,9 +400,44 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script>
+function loadScriptOnce(src, timeoutMs){
+  return new Promise((resolve, reject)=>{
+    let done = false;
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = ()=>{ if(!done){ done=true; resolve(); } };
+    s.onerror = ()=>{ if(!done){ done=true; reject(new Error("load error: "+src)); } };
+    document.head.appendChild(s);
+    setTimeout(()=>{ if(!done){ done=true; reject(new Error("timeout: "+src)); } }, timeoutMs||6000);
+  });
+}
+async function loadWithFallback(urls, timeoutMs){
+  let lastErr;
+  for(const url of urls){
+    try{ await loadScriptOnce(url, timeoutMs); return; }
+    catch(e){ lastErr = e; }
+  }
+  throw lastErr;
+}
+async function bootWeddingWall(){
+  try{
+    if(!window.supabase){
+      await loadWithFallback([
+        "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
+        "https://unpkg.com/@supabase/supabase-js@2"
+      ], 6000);
+    }
+  }catch(e){
+    document.body.innerHTML = '<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:30px; background:#211c16; color:#f5ead5; font-family:sans-serif;"><div><p style="font-size:17px; margin-bottom:10px;">Не удалось загрузить сайт</p><p style="font-size:14px; color:#a99b83;">Проверьте интернет-соединение и обновите страницу (потяните вниз или нажмите ⟳)</p></div></div>';
+    return;
+  }
+  startWeddingWallApp();
+}
+bootWeddingWall();
+</script>
+<script>
+function startWeddingWallApp(){
 (function(){
   // ====== SUPABASE CONFIG ======
   const SUPABASE_URL = "https://axrjkhyxdbmfegbxnglr.supabase.co";
@@ -830,6 +865,13 @@
     btn.disabled = true;
     const usedNames = {};
     try{
+      if(!window.JSZip){
+        statusEl.textContent = "Загружаем архиватор…";
+        await loadWithFallback([
+          "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
+          "https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"
+        ], 6000);
+      }
       const zip = new JSZip();
       for(let i=0; i<photos.length; i++){
         statusEl.textContent = `Загрузка ${i+1} из ${photos.length}…`;
@@ -1006,6 +1048,7 @@
   renderWordPreview();
   applyViewFromHash();
 })();
+}
 </script>
 </body>
 </html>
