@@ -388,6 +388,16 @@
         <div class="mini-photo-grid" id="host-photos"></div>
         <h3 style="margin-top:22px">Слова</h3>
         <div class="word-mini" id="host-words"></div>
+
+        <h3 style="margin-top:34px; color:#c0505a;">Новая свадьба</h3>
+        <p class="hint" style="margin:-6px 0 14px; font-size:12.5px; color:#847a6a;">Удаляет все фото, тосты и слова навсегда — используй только когда мероприятие закончилось и сайт нужен для другой свадьбы</p>
+        <button id="reset-wedding-btn" style="width:100%; background:none; border:1px solid #c0505a; border-radius:var(--radius); padding:11px; font-family:'Cormorant Garamond',serif; font-size:15px; color:#c0505a; cursor:pointer;">Удалить все данные ✕</button>
+        <div id="reset-confirm-box" style="display:none; margin-top:12px; background:#3c1a1e; border-radius:10px; padding:16px;">
+          <p style="font-size:13px; color:#f0d6d6; margin:0 0 12px;">Это удалит все фото, тосты и слова безвозвратно. Точно начать заново для новой свадьбы?</p>
+          <button id="reset-confirm-yes" style="width:100%; margin-bottom:8px; background:#c0505a; border:none; border-radius:var(--radius); padding:11px; font-family:'Cormorant Garamond',serif; font-size:15px; color:#fff; cursor:pointer;">Да, удалить всё</button>
+          <button id="reset-confirm-no" style="width:100%; background:none; border:1px solid #6b5a5c; border-radius:var(--radius); padding:11px; font-family:'Cormorant Garamond',serif; font-size:15px; color:#c9bfae; cursor:pointer;">Отмена</button>
+        </div>
+        <div id="reset-status" style="margin-top:8px;"></div>
       </div>
     </div>
   </div>
@@ -900,6 +910,49 @@ function startWeddingWallApp(){
       statusEl.textContent = "Ошибка при сборке архива: " + (e.message||String(e));
     }
     btn.disabled = false;
+  });
+
+  // ---- начать заново: удалить все данные для новой свадьбы ----
+  document.getElementById("reset-wedding-btn").addEventListener("click", ()=>{
+    document.getElementById("reset-confirm-box").style.display = "block";
+  });
+  document.getElementById("reset-confirm-no").addEventListener("click", ()=>{
+    document.getElementById("reset-confirm-box").style.display = "none";
+  });
+  document.getElementById("reset-confirm-yes").addEventListener("click", async ()=>{
+    const statusEl = document.getElementById("reset-status");
+    const yesBtn = document.getElementById("reset-confirm-yes");
+    yesBtn.disabled = true;
+    statusEl.innerHTML = '<div class="toast-msg ok">Удаляем всё…</div>';
+    try{
+      // удаляем строки из таблиц
+      await sb.from("messages").delete().neq("id", 0);
+      await sb.from("words").delete().neq("id", 0);
+      const { data: photoRows } = await sb.from("photos").select("id");
+      await sb.from("photos").delete().neq("id", 0);
+
+      // удаляем файлы фото из хранилища
+      const { data: files } = await sb.storage.from("photos").list("", { limit: 1000 });
+      if(files && files.length){
+        const paths = files.map(f=>f.name);
+        await sb.storage.from("photos").remove(paths);
+      }
+
+      // сбрасываем состояние экрана
+      await sb.from("display_state").update({
+        mode: "idle", featured: null, cover_photo: null, couple_names: null, updated_at: new Date().toISOString()
+      }).eq("id", 1);
+
+      coupleNamesText = "Саша & Маша";
+      applyCoupleNames();
+
+      document.getElementById("reset-confirm-box").style.display = "none";
+      statusEl.innerHTML = '<div class="toast-msg ok">Готово! Всё очищено, сайт готов для новой свадьбы</div>';
+      renderHost();
+    }catch(e){
+      statusEl.innerHTML = '<div class="toast-msg warn">Ошибка: '+escapeHtml(e.message||String(e))+'</div>';
+    }
+    yesBtn.disabled = false;
   });
 
   // ---------------- SCREEN ----------------
