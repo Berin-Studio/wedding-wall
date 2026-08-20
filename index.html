@@ -424,6 +424,7 @@ async function bootWeddingWall(){
   try{
     if(!window.supabase){
       await loadWithFallback([
+        "supabase.min.js",
         "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
         "https://unpkg.com/@supabase/supabase-js@2"
       ], 6000);
