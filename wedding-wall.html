@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Свадебная стена</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Work+Sans:wght@400;500;600&family=Caveat:wght@500;600;700&display=swap');
+
+  :root{
+    --paper: #f6f1e6;
+    --paper-2: #efe6d3;
+    --ink: #2c2620;
+    --wine: #6e2436;
+    --wine-2: #8c3247;
+    --gold: #a9812f;
+    --sage: #7c8b6f;
+    --line: #d9cdb2;
+    --radius: 2px;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; height:100%; background:var(--paper); color:var(--ink); font-family:'Work Sans', sans-serif; }
+  .display, h1,h2,h3, .brand{ font-family:'Cormorant Garamond', serif; }
+
+  #app{ min-height:100vh; display:flex; flex-direction:column; }
+
+  /* top dev switcher */
+  .devbar{
+    background:var(--ink); color:var(--paper-2); font-size:12px; letter-spacing:.06em;
+    display:flex; gap:0; align-items:center; padding:0 8px; text-transform:uppercase;
+  }
+  .devbar span{ opacity:.5; padding:8px 6px; }
+  .devbar button{
+    background:none; border:none; color:var(--paper-2); opacity:.55; padding:9px 10px;
+    font-family:inherit; font-size:12px; letter-spacing:.06em; cursor:pointer; text-transform:uppercase;
+  }
+  .devbar button.active{ opacity:1; color:#fff; border-bottom:2px solid var(--gold); }
+
+  .screen{ flex:1; display:none; }
+  .screen.active{ display:flex; flex-direction:column; }
+
+  /* ---------- GUEST ---------- */
+  #guest{
+    background:
+      radial-gradient(circle at 15% 8%, rgba(217,178,79,.12), transparent 45%),
+      radial-gradient(circle at 90% 85%, rgba(217,178,79,.08), transparent 45%),
+      #211c16;
+    color:#f5ead5;
+    align-items:center; padding:36px 20px 60px;
+  }
+  .g-wrap{ width:100%; max-width:440px; margin:0 auto; }
+  .g-eyebrow{ text-align:center; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#d9b24f; margin-bottom:10px;}
+  .g-names{ text-align:center; font-size:52px; font-weight:600; line-height:1; margin:0 0 6px; color:#f5ead5; }
+  .g-amp{ color:#d9b24f; font-style:italic; }
+  .g-sub{ text-align:center; color:#a99b83; font-size:14px; margin-bottom:34px; }
+  .g-menu{ display:flex; flex-direction:column; gap:14px; }
+  .g-btn{
+    position:relative; overflow:hidden;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    border:none; border-radius:18px;
+    padding:22px 20px; cursor:pointer; font-family:inherit;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 45%),
+      linear-gradient(160deg, #e8c874 0%, #c99a35 55%, #9c7420 100%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.6) inset,
+      0 -8px 14px rgba(0,0,0,.18) inset,
+      0 10px 22px rgba(120,80,10,.4),
+      0 2px 4px rgba(0,0,0,.25);
+    transition: transform .15s ease;
+  }
+  .g-btn::before{
+    content:""; position:absolute; top:2px; left:8%; right:8%; height:30%;
+    background:linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,0));
+    border-radius:50% 50% 60% 60% / 100% 100% 40% 40%; pointer-events:none;
+  }
+  .g-btn:hover{ transform: translateY(-2px); }
+  .g-btn:active{ transform: translateY(0) scale(.99); }
+  .g-btn .tt{ font-family:'Work Sans',sans-serif; font-size:18px; font-weight:600; color:#3a2606; }
+  .g-btn .sub{ font-size:13px; color:#6b4e14; margin-top:4px; }
+
+  .g-back{ background:none; border:none; color:var(--wine); font-family:inherit; font-size:13px; cursor:pointer; padding:6px 0 22px; letter-spacing:.02em; }
+  .g-back::before{ content:"← "; }
+
+  .g-panel{ background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:24px 22px; box-shadow:3px 3px 0 rgba(44,38,32,.05); }
+  .g-panel h2{ font-size:26px; margin:0 0 4px; }
+  .g-panel p.hint{ font-size:13px; color:#847a6a; margin:0 0 18px; }
+  label{ display:block; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#8c8171; margin-bottom:6px; }
+  input[type=text], textarea{
+    width:100%; border:1px solid var(--line); border-radius:var(--radius); background:var(--paper);
+    padding:12px 13px; font-family:inherit; font-size:15px; color:var(--ink); margin-bottom:16px; resize:vertical;
+  }
+  input[type=text]:focus, textarea:focus{ outline:none; border-color:var(--wine); }
+  .primary{
+    position:relative; overflow:hidden; width:100%; border:none; border-radius:999px;
+    padding:16px 14px; font-family:'Work Sans',sans-serif; font-size:15.5px; font-weight:600; letter-spacing:.01em; color:#3a2606;
+    cursor:pointer; transition: transform .12s;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 45%),
+      linear-gradient(160deg, #e8c874 0%, #c99a35 55%, #9c7420 100%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.6) inset,
+      0 -9px 16px rgba(0,0,0,.18) inset,
+      0 12px 26px rgba(120,80,10,.4),
+      0 2px 4px rgba(0,0,0,.25);
+  }
+  .primary::before{
+    content:""; position:absolute; top:3px; left:10%; right:10%; height:36%;
+    background:linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,0));
+    border-radius:50% 50% 60% 60% / 100% 100% 40% 40%; pointer-events:none;
+  }
+  .primary:hover{ transform:translateY(-1px); }
+  .primary:active{ transform:translateY(0) scale(.99); }
+  .primary:disabled{
+    background:linear-gradient(160deg, #8c7134 0%, #6b5522 100%); box-shadow:none; color:#4a3c15; cursor:default; transform:none; opacity:.65;
+  }
+  .primary:disabled::before{ display:none; }
+
+  .photo-drop{
+    border:1.5px dashed var(--line); border-radius:var(--radius); padding:26px; text-align:center;
+    color:#8c8171; font-size:13.5px; margin-bottom:16px; cursor:pointer; background:var(--paper);
+  }
+  .photo-drop img{ max-width:100%; max-height:220px; border-radius:2px; display:block; margin:0 auto; }
+  .photo-drop.has-img{ padding:10px; }
+
+  .toast-msg{ margin-top:16px; padding:13px 15px; border-radius:2px; font-size:14px; }
+  .toast-msg.ok{ background:#eef2e7; color:#4c5a3f; border:1px solid #c9d6b9; }
+  .toast-msg.warn{ background:#f6e9e2; color:var(--wine); border:1px solid #e3c3b6; }
+
+  .word-preview{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .word-chip{ background:var(--paper-2); border:1px solid var(--line); border-radius:20px; padding:6px 14px; font-size:13px; color:var(--wine); }
+
+  /* тёмная тема только для гостевых страниц (не затрагивает панель ведущего) */
+  #guest .g-panel{ background:#2c2620; border:1px solid #453d33; box-shadow:0 14px 30px rgba(0,0,0,.35); }
+  #guest .g-panel h2{ color:#f5ead5; }
+  #guest .g-panel p.hint{ color:#a99b83; }
+  #guest label{ color:#a99b83; }
+  #guest input[type=text], #guest textarea{
+    background:#211c16; border:1px solid #453d33; color:#f5ead5;
+  }
+  #guest input[type=text]::placeholder, #guest textarea::placeholder{ color:#6b6255; }
+  #guest input[type=text]:focus, #guest textarea:focus{ border-color:#d9b24f; }
+  #guest .photo-drop{ background:#211c16; border-color:#453d33; color:#a99b83; }
+  #guest .g-back{ color:#d9b24f; }
+  #guest .word-chip{ background:#3c3126; border:1px solid #453d33; color:#e8c874; }
+
+  .promo-card{
+    background:#2c2620; border-radius:14px; padding:22px 20px 20px; text-align:center; margin-top:22px;
+  }
+  .promo-card img{ height:38px; margin:0 auto 14px; display:block; }
+  .promo-card .promo-h{ font-family:'Work Sans',sans-serif; font-weight:600; font-size:14px; color:#f0e6d2; letter-spacing:.01em; margin-bottom:4px; }
+  .promo-card .promo-s{ font-family:'Work Sans',sans-serif; font-size:13px; color:#b9ac93; line-height:1.5; margin-bottom:16px; }
+  .promo-card .promo-links{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .promo-card .promo-links a{
+    font-family:'Work Sans',sans-serif; font-size:12.5px; font-weight:600; text-decoration:none; color:#2c2620;
+    padding:8px 14px; border-radius:999px;
+    background:linear-gradient(135deg, #d9c94a, #7fae4a);
+  }
+
+  /* ---------- HOST ---------- */
+  #host{ background:var(--ink); color:var(--paper); padding:0; }
+  .h-top{ display:flex; align-items:baseline; justify-content:space-between; padding:22px 26px 14px; border-bottom:1px solid #453d33; }
+  .h-top h1{ font-size:26px; margin:0; color:#fff; }
+  .h-top .h-sub{ font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:#a99; opacity:.6; }
+  .h-body{ display:grid; grid-template-columns: 1.3fr 1fr; gap:0; flex:1; min-height:0; }
+  @media(max-width:820px){ .h-body{ grid-template-columns:1fr; } }
+  .h-col{ padding:20px 24px; overflow-y:auto; }
+  .h-col + .h-col{ border-left:1px solid #453d33; }
+  .h-col h3{ font-size:13px; letter-spacing:.1em; text-transform:uppercase; font-family:'Work Sans',sans-serif; color:#c9bfa8; margin:0 0 14px; font-weight:600; }
+
+  .msg-card{ background:#332c24; border:1px solid #4a4033; border-radius:3px; padding:14px 16px; margin-bottom:10px; }
+  .msg-card .who{ font-size:12px; color:var(--gold); margin-bottom:4px; letter-spacing:.02em; }
+  .msg-card .txt{ font-size:15.5px; line-height:1.45; margin-bottom:12px; font-family:'Cormorant Garamond',serif; }
+  .msg-actions{ display:flex; gap:8px; }
+  .msg-actions button{
+    font-family:'Work Sans',sans-serif; font-size:12px; border-radius:3px; border:1px solid #574c3c;
+    background:none; color:#e7ddc9; padding:7px 12px; cursor:pointer; letter-spacing:.02em;
+  }
+  .msg-actions .approve{ border-color:#7c8b6f; color:#c3d0b5; }
+  .msg-actions .approve:hover{ background:#7c8b6f; color:#fff; }
+  .msg-actions .reject{ border-color:#8c3247; color:#e3b8c1; }
+  .msg-actions .reject:hover{ background:#8c3247; color:#fff; }
+  .msg-actions .show{ border-color:var(--gold); color:#e9d8ad; }
+  .msg-actions .show:hover{ background:var(--gold); color:#2c2620; }
+  .empty{ font-size:13px; color:#7a715f; font-style:italic; }
+
+  .stage-btns{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+  .stage-btns button{
+    font-family:'Work Sans',sans-serif; font-size:12px; border:1px solid #574c3c; background:#332c24; color:#e7ddc9;
+    padding:9px 13px; border-radius:3px; cursor:pointer;
+  }
+  .stage-btns button.on{ background:var(--wine); border-color:var(--wine); color:#fff; }
+
+  .mini-photo-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+  .mini-photo-grid img{ width:100%; height:70px; object-fit:cover; border-radius:2px; }
+
+  .word-mini{ display:flex; flex-wrap:wrap; gap:6px; }
+  .word-mini span{ background:#332c24; border:1px solid #4a4033; padding:4px 10px; border-radius:20px; font-size:12px; color:#e9d8ad; }
+
+  /* ---------- BIG SCREEN ---------- */
+  #screen{
+    background: radial-gradient(circle at 50% 0%, #3a2530, #1c1712 70%);
+    color:#f6f1e6; align-items:center; justify-content:center; position:relative; overflow:hidden;
+  }
+  .sc-eyebrow{ position:absolute; top:26px; left:0; right:0; text-align:center; font-size:12px; letter-spacing:.3em; text-transform:uppercase; color:var(--gold); opacity:.85; }
+  .sc-stage{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+
+  .sc-idle{ text-align:center; }
+  .sc-idle .names{ font-size:min(11vw,90px); font-family:'Cormorant Garamond',serif; font-weight:600; }
+  .sc-idle .amp{ color:var(--gold); font-style:italic; }
+  .sc-idle .qrbox{ margin-top:26px; display:inline-flex; align-items:center; gap:14px; background:rgba(255,255,255,.06); padding:14px 22px; border-radius:6px; border:1px solid rgba(255,255,255,.12); }
+  .sc-idle .qricon{ width:110px; height:110px; background:#fff; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:26px; padding:6px; }
+  .sc-idle .qrtext{ text-align:left; font-size:13px; color:#d9cdb2; }
+
+  .sc-photos{ width:min(60vw,620px); position:relative; }
+  .sc-polaroid{
+    background:#fbfaf6; padding:22px 22px 0; border-radius:2px;
+    box-shadow:0 30px 80px rgba(0,0,0,.5), 0 2px 0 rgba(0,0,0,.04) inset;
+    opacity:0; transform:rotate(-1.4deg) scale(.97); transition:opacity .8s ease, transform .8s ease;
+  }
+  .sc-polaroid.on{ opacity:1; transform:rotate(-1.4deg) scale(1); }
+  .sc-polaroid .ph-frame{ width:100%; aspect-ratio:1/1; overflow:hidden; background:#ece6d8; }
+  .sc-polaroid .ph-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .sc-polaroid .ph-cap{
+    padding:16px 6px 26px; text-align:center; font-family:'Caveat',cursive;
+    font-size:30px; color:#2c2620; line-height:1;
+  }
+  .sc-polaroid .ph-cap::before{ content:"— "; }
+
+  .sc-album{ width:min(88vw,1100px); height:min(78vh,760px); overflow-y:auto; padding:10px; }
+  .sc-album-grid{ display:flex; flex-wrap:wrap; gap:26px 22px; justify-content:center; align-items:flex-start; }
+  .sc-album .polaroid-card{
+    background:#fbfaf6; padding:12px 12px 0; width:200px; border-radius:2px;
+    box-shadow:0 10px 26px rgba(0,0,0,.35); flex:0 0 auto;
+  }
+  .sc-album .polaroid-card:nth-child(3n){ transform:rotate(1.6deg); }
+  .sc-album .polaroid-card:nth-child(3n+1){ transform:rotate(-1.8deg); }
+  .sc-album .polaroid-card:nth-child(3n+2){ transform:rotate(0.6deg); }
+  .sc-album .ph-frame{ width:100%; aspect-ratio:1/1; overflow:hidden; background:#ece6d8; }
+  .sc-album .ph-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .sc-album .ph-cap{ padding:10px 4px 16px; text-align:center; font-family:'Caveat',cursive; font-size:19px; color:#2c2620; line-height:1; }
+  .sc-album .ph-cap::before{ content:"— "; }
+  .sc-album-title{ text-align:center; margin-bottom:20px; }
+  .sc-album-title .t1{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:22px; color:var(--gold); }
+
+  .sc-toast{ width:min(70vw,760px); text-align:center; }
+  .sc-toast .quote{ font-size:min(6vw,44px); font-family:'Cormorant Garamond',serif; font-style:italic; line-height:1.3; }
+  .sc-toast .from{ margin-top:22px; font-size:14px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); }
+
+  .sc-heart{ width:min(80vh,700px); height:min(80vh,700px); }
+  .sc-heart text{ font-family:'Cormorant Garamond',serif; fill:#f6e9d2; }
+
+  .sc-empty{ text-align:center; color:#9c9284; font-size:15px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="devbar" style="justify-content:flex-end;">
+    <span id="sync-status" style="opacity:.35;">●</span>
+  </div>
+
+  <!-- ============ GUEST ============ -->
+  <div id="guest" class="screen active">
+    <div class="g-wrap">
+
+      <div id="g-menu-view">
+        <div class="g-eyebrow">Вы на свадьбе у</div>
+        <h1 class="g-names" id="g-names">Саша <span class="g-amp">&amp;</span> Маша</h1>
+        <div class="g-sub">Наведите камеру на этот экран не нужно — вы уже здесь. Выберите, что хотите оставить:</div>
+        <div class="g-menu">
+          <button class="g-btn" data-go="photo">
+            <div><div class="tt">Отправить фотографию</div><div class="sub">Момент праздника — в общий альбом</div></div>
+          </button>
+          <button class="g-btn" data-go="toast">
+            <div><div class="tt">Тост или пожелание</div><div class="sub">Ведущий может зачитать его вслух</div></div>
+          </button>
+          <button class="g-btn" data-go="word">
+            <div><div class="tt">Одно слово о молодых</div><div class="sub">Соберётся в облако в конце вечера</div></div>
+          </button>
+        </div>
+        <div id="g-cover-wrap" style="display:none; margin-top:26px; text-align:center;">
+          <img id="g-cover-img" style="max-width:100%; border-radius:2px; box-shadow:3px 3px 0 rgba(44,38,32,.08);" />
+        </div>
+        <div class="promo-card">
+          <img src="data:image/jpeg;base64,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" alt="ЦРУ event"/>
+          <div class="promo-h">Только для гостей этой свадьбы</div>
+          <div class="promo-s">Скидка 10% на организацию вашего события</div>
+          <div class="promo-links">
+            <a href="https://t.me/CRU_by_BERIN" target="_blank" rel="noopener">Telegram</a>
+            <a href="https://instagram.com/cru_event" target="_blank" rel="noopener">Instagram</a>
+            <a href="https://vk.com/cru_event" target="_blank" rel="noopener">ВКонтакте</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="g-photo-view" style="display:none">
+        <button class="g-back">Назад</button>
+        <div class="g-panel">
+          <h2>Фотография</h2>
+          <p class="hint">Она появится в общем свадебном альбоме</p>
+          <div class="photo-drop" id="photo-drop">
+            <div id="photo-drop-empty">Нажмите, чтобы выбрать фото<br>или сделать снимок</div>
+            <img id="photo-preview" style="display:none" />
+          </div>
+          <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" />
+          <label>Ваше имя (необязательно)</label>
+          <input type="text" id="photo-name" placeholder="Например, Игорь" />
+          <button class="primary" id="photo-submit" disabled>Отправить фото</button>
+          <div id="photo-status"></div>
+        </div>
+      </div>
+
+      <div id="g-toast-view" style="display:none">
+        <button class="g-back">Назад</button>
+        <div class="g-panel">
+          <h2>Тост / пожелание</h2>
+          <p class="hint">Пройдёт короткую проверку перед показом на экране</p>
+          <label>Ваше имя</label>
+          <input type="text" id="toast-name" placeholder="Например, Игорь, стол №6" />
+          <label>Ваше пожелание</label>
+          <textarea id="toast-text" rows="4" placeholder="Пусть ваша любовь становится только крепче..."></textarea>
+          <button class="primary" id="toast-submit">Отправить</button>
+          <div id="toast-status"></div>
+        </div>
+      </div>
+
+      <div id="g-word-view" style="display:none">
+        <button class="g-back">Назад</button>
+        <div class="g-panel">
+          <h2>Одно слово</h2>
+          <p class="hint">Опишите молодых одним словом — любовь, счастье, огонь…</p>
+          <input type="text" id="word-input" placeholder="Например: нежность" maxlength="24" />
+          <button class="primary" id="word-submit">Добавить в облако</button>
+          <div id="word-status"></div>
+          <div class="word-preview" id="word-preview"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ HOST ============ -->
+  <div id="host" class="screen">
+    <div class="h-top">
+      <h1>Панель ведущего</h1>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div class="h-sub" id="host-count">0 новых</div>
+        <a href="#screen" target="_blank" rel="noopener" style="font-family:'Cormorant Garamond',serif; font-size:15px; color:var(--gold); border:1px solid var(--gold); border-radius:2px; padding:7px 14px; text-decoration:none; white-space:nowrap;">Открыть большой экран ↗</a>
+      </div>
+    </div>
+    <div class="h-body">
+      <div class="h-col">
+        <h3>Входящие тосты и пожелания</h3>
+        <div id="host-pending"></div>
+      </div>
+      <div class="h-col">
+        <h3>Имена молодожёнов</h3>
+        <p class="hint" style="margin:-6px 0 14px; font-size:12.5px; color:#847a6a;">Появится везде на сайте вместо «Саша &amp; Маша»</p>
+        <input type="text" id="couple-names-input" placeholder="Саша &amp; Маша" style="margin-bottom:10px;" />
+        <button class="primary" id="couple-names-submit">Сохранить имена</button>
+        <div id="couple-names-status" style="margin-top:8px;"></div>
+
+        <h3 style="margin-top:26px">Фото пары на главной странице</h3>
+        <p class="hint" style="margin:-6px 0 14px; font-size:12.5px; color:#847a6a;">Появится у гостей под кнопками, до начала мероприятия можно оставить пустым</p>
+        <div class="photo-drop" id="cover-drop" style="margin-bottom:12px;">
+          <div id="cover-drop-empty">Нажмите, чтобы выбрать фото</div>
+          <img id="cover-preview" style="display:none" />
+        </div>
+        <input type="file" id="cover-input" accept="image/*" style="display:none" />
+        <button class="primary" id="cover-submit" disabled>Загрузить фото</button>
+        <button id="cover-clear" style="width:100%; margin-top:8px; background:none; border:1px solid var(--line); border-radius:var(--radius); padding:10px; font-family:inherit; font-size:13px; color:var(--wine); cursor:pointer;">Убрать текущее фото</button>
+        <div id="cover-status"></div>
+        <h3>Что показать на экране</h3>
+        <div style="font-size:13px; color:#a99; margin-bottom:10px;">Сейчас у гостей: <span id="host-current-mode" style="color:var(--gold);">—</span></div>
+        <div class="stage-btns" id="stage-btns">
+          <button data-stage="idle">Заставка</button>
+          <button data-stage="photos">Фотоальбом</button>
+          <button data-stage="toasts">Лента тостов</button>
+          <button data-stage="heart">Облако слов</button>
+          <button data-stage="album">Финальный альбом</button>
+        </div>
+        <h3 style="margin-top:22px">Одобренные тосты</h3>
+        <div id="host-approved"></div>
+        <h3 style="margin-top:22px">Фото гостей (<span id="host-photo-count">0</span>)</h3>
+        <button id="download-all-photos" style="width:100%; margin-bottom:10px; background:none; border:1px solid var(--gold); border-radius:var(--radius); padding:11px; font-family:'Cormorant Garamond',serif; font-size:15px; color:var(--gold); cursor:pointer;">Скачать все фото (ZIP) ↓</button>
+        <div id="download-status" style="font-size:12.5px; color:#a99; margin-bottom:12px;"></div>
+        <div class="mini-photo-grid" id="host-photos"></div>
+        <h3 style="margin-top:22px">Слова</h3>
+        <div class="word-mini" id="host-words"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN ============ -->
+  <div id="screen" class="screen">
+    <div class="sc-eyebrow" id="sc-eyebrow">Саша &amp; Маша · Свадебная стена</div>
+    <div class="sc-stage" id="sc-stage"></div>
+  </div>
+
+</div>
+
+<script>
+function loadScriptOnce(src, timeoutMs){
+  return new Promise((resolve, reject)=>{
+    let done = false;
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = ()=>{ if(!done){ done=true; resolve(); } };
+    s.onerror = ()=>{ if(!done){ done=true; reject(new Error("load error: "+src)); } };
+    document.head.appendChild(s);
+    setTimeout(()=>{ if(!done){ done=true; reject(new Error("timeout: "+src)); } }, timeoutMs||6000);
+  });
+}
+async function loadWithFallback(urls, timeoutMs){
+  let lastErr;
+  for(const url of urls){
+    try{ await loadScriptOnce(url, timeoutMs); return; }
+    catch(e){ lastErr = e; }
+  }
+  throw lastErr;
+}
+async function bootWeddingWall(){
+  try{
+    if(!window.supabase){
+      await loadWithFallback([
+        "supabase.min.js",
+        "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
+        "https://unpkg.com/@supabase/supabase-js@2"
+      ], 6000);
+    }
+  }catch(e){
+    document.body.innerHTML = '<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:30px; background:#211c16; color:#f5ead5; font-family:sans-serif;"><div><p style="font-size:17px; margin-bottom:10px;">Не удалось загрузить сайт</p><p style="font-size:14px; color:#a99b83;">Проверьте интернет-соединение и обновите страницу (потяните вниз или нажмите ⟳)</p></div></div>';
+    return;
+  }
+  startWeddingWallApp();
+}
+bootWeddingWall();
+</script>
+<script>
+function startWeddingWallApp(){
+(function(){
+  // ====== SUPABASE CONFIG ======
+  const SUPABASE_URL = "https://axrjkhyxdbmfegbxnglr.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_q3X0irWAL-she9UKvASNuQ_HPncr6Mb";
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let coupleNamesText = "Саша & Маша";
+  function nameParts(){
+    const parts = coupleNamesText.split("&").map(s=>s.trim());
+    return parts.length === 2 ? parts : [coupleNamesText, ""];
+  }
+  function applyCoupleNames(){
+    const [a,b] = nameParts();
+    const gNames = document.getElementById("g-names");
+    if(gNames) gNames.innerHTML = b ? `${escapeHtml(a)} <span class="g-amp">&amp;</span> ${escapeHtml(b)}` : escapeHtml(a);
+    const scEyebrow = document.getElementById("sc-eyebrow");
+    if(scEyebrow) scEyebrow.textContent = coupleNamesText + " · Свадебная стена";
+    const scIdleNames = document.getElementById("sc-idle-names");
+    if(scIdleNames) scIdleNames.innerHTML = b ? `${escapeHtml(a)} <span class="amp">&amp;</span> ${escapeHtml(b)}` : escapeHtml(a);
+  }
+
+  function promoBlockHtml(){
+    return `<div class="promo-card">
+      <div class="promo-h">Только для гостей этой свадьбы</div>
+      <div class="promo-s">Скидка 10% на организацию вашего события</div>
+      <div class="promo-links">
+        <a href="https://t.me/CRU_by_BERIN" target="_blank" rel="noopener">Telegram</a>
+        <a href="https://instagram.com/cru_event" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://vk.com/cru_event" target="_blank" rel="noopener">ВКонтакте</a>
+      </div>
+    </div>`;
+  }
+  const RUSSIAN_STOPWORDS_PROFANITY = ["бляд","хуй","хуе","хуё","пизд","ебат","еба ","ебал","ебан","сука ","сук,","мудак","долбо","гандон","залуп","пидор","чмо ","мраз"];
+  function containsProfanity(text){
+    const t = (" "+text.toLowerCase()+" ").replace(/[^а-яё ]/g," ");
+    return RUSSIAN_STOPWORDS_PROFANITY.some(w=>t.includes(w));
+  }
+  function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+  let storageOk = true;
+
+  // ---------------- DATA LAYER (Supabase) ----------------
+  async function fetchPhotos(){
+    const { data, error } = await sb.from("photos").select("*").order("created_at", { ascending:true });
+    storageOk = !error;
+    if(error){ console.error("fetchPhotos: " + (error.message||JSON.stringify(error))); return []; }
+    return data.map(p=>({ id:p.id, name:p.name || "Гость", img:p.url, ts:new Date(p.created_at).getTime() }));
+  }
+  async function addPhoto(dataUrl, name){
+    const blob = await (await fetch(dataUrl)).blob();
+    const fileName = `guest-${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
+    const { error: upErr } = await sb.storage.from("photos").upload(fileName, blob, { contentType:"image/jpeg" });
+    if(upErr){ storageOk = false; throw upErr; }
+    const { data: pub } = sb.storage.from("photos").getPublicUrl(fileName);
+    const { error: insErr } = await sb.from("photos").insert({ name: name || "Гость", url: pub.publicUrl });
+    storageOk = !insErr;
+    if(insErr) throw insErr;
+  }
+
+  async function fetchMessages(){
+    const { data, error } = await sb.from("messages").select("*").order("created_at", { ascending:true });
+    storageOk = !error;
+    if(error){ console.error("fetchMessages: " + (error.message||JSON.stringify(error))); return []; }
+    return data.map(m=>({ id:m.id, name:m.name || "Гость", text:m.text, status:m.status || "pending", ts:new Date(m.created_at).getTime() }));
+  }
+  async function addMessage(name, text){
+    const { error } = await sb.from("messages").insert({ name, text, status:"pending" });
+    storageOk = !error;
+    if(error) throw error;
+  }
+  async function updateMessageStatus(id, status){
+    const { error } = await sb.from("messages").update({ status }).eq("id", id);
+    storageOk = !error;
+    if(error) throw error;
+  }
+
+  async function fetchWords(){
+    const { data, error } = await sb.from("words").select("word");
+    storageOk = !error;
+    if(error){ console.error("fetchWords: " + (error.message||JSON.stringify(error))); return {}; }
+    const counts = {};
+    data.forEach(r=>{ counts[r.word] = (counts[r.word]||0)+1; });
+    return counts;
+  }
+  async function addWord(word){
+    const { error } = await sb.from("words").insert({ word });
+    storageOk = !error;
+    if(error) throw error;
+  }
+
+  async function fetchDisplay(){
+    const { data, error } = await sb.from("display_state").select("*").eq("id", 1).single();
+    storageOk = !error;
+    if(error){ console.error("fetchDisplay: " + (error.message||JSON.stringify(error))); return { mode:"idle", featured:null, cover_photo:null, couple_names:null }; }
+    return { mode: data.mode || "idle", featured: data.featured, cover_photo: data.cover_photo || null, couple_names: data.couple_names || null };
+  }
+  async function setDisplay(mode, featured){
+    const { error } = await sb.from("display_state")
+      .update({ mode, featured: featured || null, updated_at: new Date().toISOString() })
+      .eq("id", 1);
+    storageOk = !error;
+    if(error) console.error("setDisplay: " + (error.message||JSON.stringify(error)));
+  }
+  async function setCoupleNames(names){
+    const { error } = await sb.from("display_state")
+      .update({ couple_names: names || null, updated_at: new Date().toISOString() })
+      .eq("id", 1);
+    if(error) throw error;
+  }
+  async function setCoverPhoto(dataUrl){
+    const fileName = `cover-${Date.now()}.jpg`;
+    const blob = await (await fetch(dataUrl)).blob();
+    const { error: upErr } = await sb.storage.from("photos").upload(fileName, blob, { contentType:"image/jpeg" });
+    if(upErr) throw upErr;
+    const { data: pub } = sb.storage.from("photos").getPublicUrl(fileName);
+    const { error: updErr } = await sb.from("display_state")
+      .update({ cover_photo: pub.publicUrl, updated_at: new Date().toISOString() })
+      .eq("id", 1);
+    if(updErr) throw updErr;
+    return pub.publicUrl;
+  }
+  async function clearCoverPhoto(){
+    const { error } = await sb.from("display_state")
+      .update({ cover_photo: null, updated_at: new Date().toISOString() })
+      .eq("id", 1);
+    if(error) throw error;
+  }
+
+  // ---------------- view switching (hidden routes via URL hash) ----------------
+  // cru-event.ru            -> гость (по умолчанию, видят все)
+  // cru-event.ru/#host      -> панель ведущего (скрытая ссылка)
+  // cru-event.ru/#screen    -> большой экран (скрытая ссылка)
+  const views = ["guest","host","screen"];
+  function applyViewFromHash(){
+    const raw = (location.hash || "").replace("#","").trim();
+    const view = views.includes(raw) ? raw : "guest";
+    views.forEach(v=>{
+      document.getElementById(v).classList.toggle("active", v===view);
+    });
+    if(view === "host"){ lastMode = null; renderHost(); }
+    if(view === "screen"){ lastMode = null; renderScreen(); }
+  }
+  window.addEventListener("hashchange", applyViewFromHash);
+
+  // ---------------- GUEST: menu nav ----------------
+  const gMenu = document.getElementById("g-menu-view");
+  async function loadCoverPhoto(){
+    const display = await fetchDisplay();
+    if(display.couple_names){ coupleNamesText = display.couple_names; applyCoupleNames(); }
+    const wrap = document.getElementById("g-cover-wrap");
+    const img = document.getElementById("g-cover-img");
+    if(display.cover_photo){
+      img.src = display.cover_photo;
+      wrap.style.display = "";
+    } else {
+      wrap.style.display = "none";
+    }
+  }
+  loadCoverPhoto();
+  const gPhoto = document.getElementById("g-photo-view");
+  const gToast = document.getElementById("g-toast-view");
+  const gWord = document.getElementById("g-word-view");
+  function showGuestPane(which){
+    gMenu.style.display = which==="menu" ? "" : "none";
+    gPhoto.style.display = which==="photo" ? "" : "none";
+    gToast.style.display = which==="toast" ? "" : "none";
+    gWord.style.display = which==="word" ? "" : "none";
+  }
+  document.querySelectorAll(".g-btn[data-go]").forEach(b=>{
+    b.addEventListener("click", ()=>showGuestPane(b.dataset.go));
+  });
+  document.querySelectorAll(".g-back").forEach(b=>b.addEventListener("click", ()=>showGuestPane("menu")));
+
+  // ---- photo ----
+  let currentPhotoDataUrl = null;
+  const photoDrop = document.getElementById("photo-drop");
+  const photoInput = document.getElementById("photo-input");
+  const photoPreview = document.getElementById("photo-preview");
+  const photoEmpty = document.getElementById("photo-drop-empty");
+  const photoSubmit = document.getElementById("photo-submit");
+  photoDrop.addEventListener("click", ()=>photoInput.click());
+  photoInput.addEventListener("change", (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      img.onload = ()=>{
+        const canvas = document.createElement("canvas");
+        const maxDim = 900;
+        let w = img.width, h = img.height;
+        if(w>h && w>maxDim){ h = h*maxDim/w; w = maxDim; }
+        else if(h>=w && h>maxDim){ w = w*maxDim/h; h = maxDim; }
+        canvas.width=w; canvas.height=h;
+        canvas.getContext("2d").drawImage(img,0,0,w,h);
+        currentPhotoDataUrl = canvas.toDataURL("image/jpeg", 0.72);
+        photoPreview.src = currentPhotoDataUrl;
+        photoPreview.style.display="block";
+        photoEmpty.style.display="none";
+        photoDrop.classList.add("has-img");
+        photoSubmit.disabled = false;
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  photoSubmit.addEventListener("click", async ()=>{
+    if(!currentPhotoDataUrl) return;
+    const photoName = document.getElementById("photo-name").value.trim();
+    if(containsProfanity(photoName)){
+      document.getElementById("photo-status").innerHTML = '<div class="toast-msg warn">Подпись не прошла проверку, измените имя</div>';
+      return;
+    }
+    photoSubmit.disabled = true; photoSubmit.textContent = "Отправка…";
+    try{
+      await addPhoto(currentPhotoDataUrl, photoName);
+      document.getElementById("photo-status").innerHTML = '<div class="toast-msg ok">Спасибо! Фото добавлено в альбом ❤️</div>' + promoBlockHtml();
+    }catch(e){
+      console.error(e);
+      document.getElementById("photo-status").innerHTML = '<div class="toast-msg warn">Ошибка: '+escapeHtml(e.message||String(e))+'</div>';
+      photoSubmit.disabled = false; photoSubmit.textContent = "Отправить фото";
+      return;
+    }
+    photoSubmit.textContent = "Отправить фото";
+    setTimeout(()=>{
+      currentPhotoDataUrl=null; photoPreview.style.display="none"; photoEmpty.style.display="block";
+      photoDrop.classList.remove("has-img"); photoInput.value=""; photoSubmit.disabled=true;
+      document.getElementById("photo-status").innerHTML="";
+      showGuestPane("menu");
+    }, 1400);
+  });
+
+  // ---- toast ----
+  document.getElementById("toast-submit").addEventListener("click", async ()=>{
+    const name = document.getElementById("toast-name").value.trim() || "Гость";
+    const text = document.getElementById("toast-text").value.trim();
+    const statusEl = document.getElementById("toast-status");
+    if(!text){ statusEl.innerHTML = '<div class="toast-msg warn">Напишите пару слов :)</div>'; return; }
+    if(containsProfanity(text)){
+      statusEl.innerHTML = '<div class="toast-msg warn">Сообщение не прошло проверку и не будет опубликовано.</div>';
+      return;
+    }
+    try{
+      await addMessage(name, text);
+      statusEl.innerHTML = '<div class="toast-msg ok">Спасибо! Ведущий скоро его увидит 🥂</div>' + promoBlockHtml();
+      document.getElementById("toast-text").value = "";
+    }catch(e){
+      console.error(e);
+      statusEl.innerHTML = '<div class="toast-msg warn">Ошибка: '+escapeHtml(e.message||String(e))+'</div>';
+      return;
+    }
+    setTimeout(()=>{ statusEl.innerHTML=""; showGuestPane("menu"); }, 1400);
+  });
+
+  // ---- word ----
+  async function renderWordPreview(){
+    const words = await fetchWords();
+    const top = Object.entries(words).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    document.getElementById("word-preview").innerHTML = top.map(([w])=>`<span class="word-chip">${escapeHtml(w)}</span>`).join("");
+  }
+  document.getElementById("word-submit").addEventListener("click", async ()=>{
+    const input = document.getElementById("word-input");
+    let w = input.value.trim().toLowerCase().replace(/[^а-яёa-z\- ]/gi,"");
+    const statusEl = document.getElementById("word-status");
+    if(!w){ statusEl.innerHTML = '<div class="toast-msg warn">Введите слово</div>'; return; }
+    if(containsProfanity(w)){ statusEl.innerHTML = '<div class="toast-msg warn">Это слово нельзя добавить</div>'; return; }
+    try{
+      await addWord(w);
+      statusEl.innerHTML = '<div class="toast-msg ok">Добавлено в облако ❤️</div>' + promoBlockHtml();
+      input.value = "";
+      await renderWordPreview();
+    }catch(e){
+      console.error(e);
+      statusEl.innerHTML = '<div class="toast-msg warn">Ошибка: '+escapeHtml(e.message||String(e))+'</div>';
+    }
+    setTimeout(()=>{ statusEl.innerHTML=""; }, 1200);
+  });
+
+  // ---------------- HOST ----------------
+  async function renderHost(){
+    const [messages, photos, words, display] = await Promise.all([
+      fetchMessages(), fetchPhotos(), fetchWords(), fetchDisplay()
+    ]);
+
+    const pending = messages.filter(m=>m.status==="pending").sort((a,b)=>a.ts-b.ts);
+    const approved = messages.filter(m=>m.status==="approved").sort((a,b)=>b.ts-a.ts);
+
+    document.getElementById("host-count").textContent = pending.length + " нов" + (pending.length===1?"ое":"ых");
+
+    if(display.couple_names){ coupleNamesText = display.couple_names; }
+    const namesInput = document.getElementById("couple-names-input");
+    if(namesInput && document.activeElement !== namesInput) namesInput.value = coupleNamesText;
+
+    const pendEl = document.getElementById("host-pending");
+    pendEl.innerHTML = pending.length ? pending.map(m=>`
+      <div class="msg-card" data-id="${m.id}">
+        <div class="who">${escapeHtml(m.name)}</div>
+        <div class="txt">${escapeHtml(m.text)}</div>
+        <div class="msg-actions">
+          <button class="approve" data-act="approve" data-id="${m.id}">Одобрить</button>
+          <button class="reject" data-act="reject" data-id="${m.id}">Скрыть</button>
+        </div>
+      </div>`).join("") : '<div class="empty">Пока пусто — ждём гостей</div>';
+
+    const apprEl = document.getElementById("host-approved");
+    apprEl.innerHTML = approved.length ? approved.slice(0,12).map(m=>`
+      <div class="msg-card" data-id="${m.id}">
+        <div class="who">${escapeHtml(m.name)}</div>
+        <div class="txt">${escapeHtml(m.text)}</div>
+        <div class="msg-actions">
+          <button class="show" data-act="showtoast" data-id="${m.id}">Вывести на экран</button>
+        </div>
+      </div>`).join("") : '<div class="empty">Одобренных пока нет</div>';
+
+    document.getElementById("host-photo-count").textContent = photos.length;
+    document.getElementById("host-photos").innerHTML = photos.slice(-9).reverse().map(p=>`<img src="${p.img}" title="${escapeHtml(p.name)}"/>`).join("");
+
+    const wordEntries = Object.entries(words).sort((a,b)=>b[1]-a[1]);
+    document.getElementById("host-words").innerHTML = wordEntries.length ? wordEntries.map(([w,c])=>`<span>${escapeHtml(w)} · ${c}</span>`).join("") : '<div class="empty">Пока нет слов</div>';
+
+    document.querySelectorAll("#stage-btns button").forEach(b=>b.classList.toggle("on", b.dataset.stage===display.mode));
+    const modeLabels = { idle:"Заставка", photos:"Фотоальбом", toasts:"Лента тостов", heart:"Облако слов", album:"Финальный альбом" };
+    document.getElementById("host-current-mode").textContent = modeLabels[display.mode] || "Заставка";
+
+    pendEl.querySelectorAll("button[data-act]").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        const id = btn.dataset.id, act = btn.dataset.act;
+        await updateMessageStatus(id, act==="approve" ? "approved" : "rejected");
+        renderHost();
+      });
+    });
+    apprEl.querySelectorAll("button[data-act=showtoast]").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        await setDisplay("toasts", btn.dataset.id);
+        renderHost();
+      });
+    });
+  }
+
+  document.getElementById("stage-btns").addEventListener("click", async (e)=>{
+    const btn = e.target.closest("button[data-stage]");
+    if(!btn) return;
+    await setDisplay(btn.dataset.stage, null);
+    renderHost();
+  });
+
+  // ---- cover photo (фото пары на главной странице гостя) ----
+  let currentCoverDataUrl = null;
+  const coverDrop = document.getElementById("cover-drop");
+  const coverInput = document.getElementById("cover-input");
+  const coverPreview = document.getElementById("cover-preview");
+  const coverEmpty = document.getElementById("cover-drop-empty");
+  const coverSubmit = document.getElementById("cover-submit");
+  const coverStatus = document.getElementById("cover-status");
+  coverDrop.addEventListener("click", ()=>coverInput.click());
+  coverInput.addEventListener("change", (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      img.onload = ()=>{
+        const canvas = document.createElement("canvas");
+        const maxDim = 1400;
+        let w = img.width, h = img.height;
+        if(w>h && w>maxDim){ h = h*maxDim/w; w = maxDim; }
+        else if(h>=w && h>maxDim){ w = w*maxDim/h; h = maxDim; }
+        canvas.width=w; canvas.height=h;
+        canvas.getContext("2d").drawImage(img,0,0,w,h);
+        currentCoverDataUrl = canvas.toDataURL("image/jpeg", 0.82);
+        coverPreview.src = currentCoverDataUrl;
+        coverPreview.style.display = "block";
+        coverEmpty.style.display = "none";
+        coverDrop.classList.add("has-img");
+        coverSubmit.disabled = false;
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  coverSubmit.addEventListener("click", async ()=>{
+    if(!currentCoverDataUrl) return;
+    coverSubmit.disabled = true; coverSubmit.textContent = "Загрузка…";
+    try{
+      await setCoverPhoto(currentCoverDataUrl);
+      coverStatus.innerHTML = '<div class="toast-msg ok">Фото сохранено, гости уже видят его на главной</div>';
+    }catch(e){
+      coverStatus.innerHTML = '<div class="toast-msg warn">Ошибка: '+escapeHtml(e.message||String(e))+'</div>';
+    }
+    coverSubmit.disabled = false; coverSubmit.textContent = "Загрузить фото";
+  });
+  // ---- имена молодожёнов ----
+  document.getElementById("couple-names-submit").addEventListener("click", async ()=>{
+    const val = document.getElementById("couple-names-input").value.trim();
+    const statusEl = document.getElementById("couple-names-status");
+    if(!val){ statusEl.innerHTML = '<div class="toast-msg warn">Введите имена</div>'; return; }
+    try{
+      await setCoupleNames(val);
+      coupleNamesText = val;
+      applyCoupleNames();
+      statusEl.innerHTML = '<div class="toast-msg ok">Сохранено, гости уже видят новые имена</div>';
+    }catch(e){
+      statusEl.innerHTML = '<div class="toast-msg warn">Ошибка: '+escapeHtml(e.message||String(e))+'</div>';
+    }
+  });
+
+  document.getElementById("cover-clear").addEventListener("click", async ()=>{
+    try{
+      await clearCoverPhoto();
+      currentCoverDataUrl = null;
+      coverPreview.style.display = "none"; coverEmpty.style.display = "block";
+      coverDrop.classList.remove("has-img"); coverInput.value=""; coverSubmit.disabled = true;
+      coverStatus.innerHTML = '<div class="toast-msg ok">Фото убрано</div>';
+    }catch(e){
+      coverStatus.innerHTML = '<div class="toast-msg warn">Ошибка: '+escapeHtml(e.message||String(e))+'</div>';
+    }
+  });
+
+  // ---- скачать все фото архивом (ZIP) ----
+  document.getElementById("download-all-photos").addEventListener("click", async ()=>{
+    const btn = document.getElementById("download-all-photos");
+    const statusEl = document.getElementById("download-status");
+    const photos = await fetchPhotos();
+    if(!photos.length){ statusEl.textContent = "Пока нет ни одной фотографии"; return; }
+    btn.disabled = true;
+    const usedNames = {};
+    try{
+      if(!window.JSZip){
+        statusEl.textContent = "Загружаем архиватор…";
+        await loadWithFallback([
+          "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
+          "https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"
+        ], 6000);
+      }
+      const zip = new JSZip();
+      for(let i=0; i<photos.length; i++){
+        statusEl.textContent = `Загрузка ${i+1} из ${photos.length}…`;
+        const p = photos[i];
+        const resp = await fetch(p.img);
+        const blob = await resp.blob();
+        let base = (p.name||"Гость").replace(/[^a-zA-Zа-яА-ЯёЁ0-9]+/g,"_").slice(0,30) || "Гость";
+        usedNames[base] = (usedNames[base]||0) + 1;
+        const fileName = `${String(i+1).padStart(3,"0")}_${base}${usedNames[base]>1 ? "_"+usedNames[base] : ""}.jpg`;
+        zip.file(fileName, blob);
+      }
+      statusEl.textContent = "Собираем архив…";
+      const content = await zip.generateAsync({ type:"blob" });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "свадебная-стена-фото.zip";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      statusEl.textContent = `Готово! Скачано фото: ${photos.length}`;
+    }catch(e){
+      console.error(e);
+      statusEl.textContent = "Ошибка при сборке архива: " + (e.message||String(e));
+    }
+    btn.disabled = false;
+  });
+
+  // ---------------- SCREEN ----------------
+  const scStage = document.getElementById("sc-stage");
+  let lastMode = null, photoTimer=null, toastTimer=null;
+
+  function clearTimers(){ if(photoTimer) clearInterval(photoTimer); if(toastTimer) clearInterval(toastTimer); photoTimer=null; toastTimer=null; }
+
+  async function renderScreen(){
+    const display = await fetchDisplay();
+    const mode = display.mode || "idle";
+    if(display.couple_names && display.couple_names !== coupleNamesText){ coupleNamesText = display.couple_names; }
+    applyCoupleNames();
+
+    if(mode !== lastMode){
+      clearTimers();
+      lastMode = mode;
+
+      if(mode === "idle"){
+        const [nA,nB] = nameParts();
+        scStage.innerHTML = `
+          <div class="sc-idle">
+            <div class="names" id="sc-idle-names">${escapeHtml(nA)}${nB ? ` <span class="amp">&amp;</span> ${escapeHtml(nB)}` : ""}</div>
+            <div class="qrbox">
+              <div class="qricon"><img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data=https%3A%2F%2Fcru-event.ru" alt="QR" style="width:100%;height:100%;object-fit:contain;"/></div>
+              <div class="qrtext">Отсканируйте QR на столе,<br>чтобы отправить фото, тост<br>или слово о молодых</div>
+            </div>
+          </div>`;
+      }
+
+      if(mode === "photos"){
+        let photos = await fetchPhotos();
+        if(!photos.length){ scStage.innerHTML = '<div class="sc-empty">Ждём первые фотографии от гостей…</div>'; return; }
+        scStage.innerHTML = `<div class="sc-photos" id="sc-photos-wrap"></div>`;
+        let i = 0;
+        const wrap = document.getElementById("sc-photos-wrap");
+        function draw(){
+          const p = photos[i % photos.length];
+          wrap.innerHTML = `<div class="sc-polaroid" id="sc-polaroid-cur"><div class="ph-frame"><img src="${p.img}"/></div><div class="ph-cap">${escapeHtml(p.name)}</div></div>`;
+          const el = document.getElementById("sc-polaroid-cur");
+          requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add("on")));
+          i++;
+        }
+        draw();
+        photoTimer = setInterval(async ()=>{
+          const fresh = await fetchPhotos();
+          if(fresh.length){ photos = fresh; draw(); }
+        }, 4200);
+      }
+
+      if(mode === "album"){
+        let photos = await fetchPhotos();
+        if(!photos.length){ scStage.innerHTML = '<div class="sc-empty">Пока нет фотографий для альбома…</div>'; return; }
+        function renderAlbum(list){
+          scStage.innerHTML = `
+            <div class="sc-album">
+              <div class="sc-album-title"><span class="t1">${escapeHtml(coupleNamesText)} · на память</span></div>
+              <div class="sc-album-grid">
+                ${list.map(p=>`
+                  <div class="polaroid-card">
+                    <div class="ph-frame"><img src="${p.img}"/></div>
+                    <div class="ph-cap">${escapeHtml(p.name)}</div>
+                  </div>`).join("")}
+              </div>
+            </div>`;
+        }
+        renderAlbum(photos);
+        photoTimer = setInterval(async ()=>{
+          const fresh = await fetchPhotos();
+          if(fresh.length !== photos.length){ photos = fresh; renderAlbum(photos); }
+        }, 6000);
+      }
+
+      if(mode === "toasts"){
+        scStage.innerHTML = `<div class="sc-toast" id="sc-toast-wrap"><div class="sc-empty">Ждём тосты от гостей…</div></div>`;
+        async function draw(){
+          const messages = await fetchMessages();
+          const approved = messages.filter(m=>m.status==="approved").sort((a,b)=>b.ts-a.ts);
+          if(!approved.length) return;
+          const disp = await fetchDisplay();
+          const chosen = (disp.featured && approved.find(m=>String(m.id)===String(disp.featured))) || approved[0];
+          document.getElementById("sc-toast-wrap").innerHTML =
+            `<div class="quote">«${escapeHtml(chosen.text)}»</div><div class="from">${escapeHtml(chosen.name)}</div>`;
+        }
+        draw();
+        toastTimer = setInterval(draw, 3000);
+      }
+
+      if(mode === "heart"){
+        const words = await fetchWords();
+        drawHeart(words);
+      }
+    } else if(mode === "heart"){
+      const words = await fetchWords();
+      drawHeart(words);
+    }
+  }
+
+  function heartPoint(t, scale){
+    const x = 16*Math.pow(Math.sin(t),3);
+    const y = 13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t);
+    return { x: x*scale, y: -y*scale };
+  }
+
+  function drawHeart(words){
+    const entries = Object.entries(words).sort((a,b)=>b[1]-a[1]);
+    if(!entries.length){ scStage.innerHTML = '<div class="sc-empty">Ждём слова о молодых…</div>'; return; }
+    const maxCount = entries[0][1];
+    const points = [];
+    const rings = 9;
+    for(let r=1; r<=rings; r++){
+      const frac = r/rings;
+      const steps = Math.round(16 + frac*26);
+      for(let s=0; s<steps; s++){
+        const t = (s/steps) * Math.PI * 2 + frac*0.4;
+        const p = heartPoint(t, 11*frac);
+        points.push({ x:p.x, y:p.y, r: frac });
+      }
+    }
+    points.sort((a,b)=>a.r-b.r);
+    const palette = ["#f6e9d2","#e9c9a0","#c98a6b","#e3b8c1","#c9d6b9","#a9812f"];
+    let svg = `<svg class="sc-heart" viewBox="-190 -170 380 340" xmlns="http://www.w3.org/2000/svg">`;
+    entries.slice(0, points.length).forEach((entry, idx)=>{
+      const [word,count] = entry;
+      const pt = points[idx];
+      const size = 12 + (count/maxCount)*30;
+      const color = palette[idx % palette.length];
+      const jitterRot = ((idx*37)%11)-5;
+      svg += `<text x="${(pt.x*11.6).toFixed(1)}" y="${(pt.y*11.6+size*0.32).toFixed(1)}" font-size="${size.toFixed(1)}" fill="${color}" text-anchor="middle" transform="rotate(${jitterRot} ${(pt.x*11.6).toFixed(1)} ${(pt.y*11.6).toFixed(1)})" opacity="${0.55+0.45*(count/maxCount)}">${escapeHtml(word)}</text>`;
+    });
+    svg += `</svg>`;
+    scStage.innerHTML = svg;
+  }
+
+  // ---------------- polling ----------------
+  setInterval(()=>{
+    if(document.getElementById("host").classList.contains("active")) renderHost();
+    if(document.getElementById("screen").classList.contains("active")) renderScreen();
+    if(document.getElementById("guest").classList.contains("active") && gMenu.style.display !== "none") loadCoverPhoto();
+    const dot = document.getElementById("sync-status");
+    if(dot){
+      dot.style.color = storageOk ? "#7c8b6f" : "#c0505a";
+      dot.title = storageOk ? "Подключено к базе данных Supabase" : "Нет связи с базой данных — проверьте интернет или ключи";
+    }
+  }, 3000);
+
+  renderWordPreview();
+  applyViewFromHash();
+})();
+}
+</script>
+</body>
+</html>
